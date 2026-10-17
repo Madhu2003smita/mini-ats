@@ -14,11 +14,11 @@ export default defineConfig({
     },
   },
   build: {
-    // Raise limit to suppress the warning — 748 kB is fine for this app
     chunkSizeWarningLimit: 800,
-    rollupOptions: {
+    // Vite 8 uses rolldownOptions (Rolldown bundler)
+    rolldownOptions: {
       output: {
-        // Rolldown (Vite 8) requires manualChunks as a function
+        // manualChunks must be a function in Rolldown
         manualChunks(id) {
           if (id.includes('node_modules/recharts') || id.includes('node_modules/d3-')) {
             return 'vendor-recharts'
