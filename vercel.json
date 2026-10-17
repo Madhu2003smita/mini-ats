@@ -1,23 +1,34 @@
-
-{
-  "version": 2,
-  "buildCommand": "cd client && npm install && npm run build",
-  "outputDirectory": "client/dist",
-  "installCommand": "npm install",
-  "functions": {
-    "api/index.js": {
-      "memory": 512,
-      "maxDuration": 30
+﻿{
+  "services": {
+    "client": {
+      "root": "client",
+      "framework": "vite"
+    },
+    "server": {
+      "root": "server",
+      "framework": "express",
+      "bindings": [
+        {
+          "type": "service",
+          "service": "client",
+          "format": "url",
+          "env": "CLIENT_URL"
+        }
+      ]
     }
   },
   "rewrites": [
     {
-      "source": "/api",
-      "destination": "/api/index"
+      "source": "/api/(.*)",
+      "destination": {
+        "service": "server"
+      }
     },
     {
-      "source": "/api/:path*",
-      "destination": "/api/index"
+      "source": "/(.*)",
+      "destination": {
+        "service": "client"
+      }
     }
   ]
 }
