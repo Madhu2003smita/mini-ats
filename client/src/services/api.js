@@ -1,8 +1,10 @@
-
 import axios from 'axios'
 
+// Always use relative /api — Vercel rewrites route it to the server service.
+// VITE_API_URL is injected by the Vercel binding but is an internal URL
+// (not reachable from the browser), so we only use it server-side if needed.
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || '/api',
+  baseURL: '/api',
   headers: { 'Content-Type': 'application/json' },
   timeout: 15000,
 })

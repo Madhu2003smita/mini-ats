@@ -2,19 +2,20 @@
   "services": {
     "client": {
       "root": "client",
-      "framework": "vite"
+      "framework": "vite",
+      "bindings": [
+        {
+          "type": "service",
+          "service": "server",
+          "format": "url",
+          "env": "VITE_API_URL"
+        }
+      ]
     },
     "server": {
       "root": "server",
       "framework": "express",
-      "bindings": [
-        {
-          "type": "service",
-          "service": "client",
-          "format": "url",
-          "env": "CLIENT_URL"
-        }
-      ]
+      "entrypoint": "server.js"
     }
   },
   "rewrites": [
