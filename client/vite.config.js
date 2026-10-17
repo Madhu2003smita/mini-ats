@@ -14,6 +14,8 @@ export default defineConfig({
     },
   },
   build: {
+    outDir: 'dist',       // explicit — Express references ../client/dist
+    emptyOutDir: true,    // clean before each build
     chunkSizeWarningLimit: 800,
     // Vite 8 uses rolldownOptions (Rolldown bundler)
     rolldownOptions: {
