@@ -1,8 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  FunnelChart, Funnel, LabelList, Cell,
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell,
 } from 'recharts'
 import {
   Users, Briefcase, CalendarCheck, Gift, CheckCircle2, XCircle,
@@ -77,6 +76,17 @@ export default function Dashboard() {
       setLoading(true)
       setError(null)
       const res = await dashboardService.getStats()
+
+      // Validate response shape before storing — a missing or malformed
+      // data property (e.g. Netlify 404 HTML, proxy error, wrong API URL)
+      // must be treated as an error, not silently stored as undefined.
+      if (!res || !res.data || typeof res.data !== 'object') {
+        throw new Error('Unexpected response from dashboard API — check your backend URL and connection.')
+      }
+      if (!res.data.metrics) {
+        throw new Error('Dashboard API response is missing the metrics field.')
+      }
+
       setStats(res.data)
     } catch (err) {
       setError(err.message)
@@ -98,7 +108,24 @@ export default function Dashboard() {
     )
   }
 
-  const { metrics, pipelineData, recentCandidates, candidatesByJob } = stats
+  // Guard: stats must be a valid object with the expected shape.
+  // This should never be reached after the fetch validation above,
+  // but acts as a safety net against future regressions.
+  if (!stats || !stats.metrics) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64 gap-3">
+        <p className="text-red-600 font-medium">Dashboard data is unavailable.</p>
+        <Button variant="secondary" onClick={fetchStats}>Retry</Button>
+      </div>
+    )
+  }
+
+  const {
+    metrics,
+    pipelineData = [],
+    recentCandidates = [],
+    candidatesByJob = [],
+  } = stats
 
   const metricCards = [
     { label: 'Total Candidates',      value: metrics.totalCandidates,      icon: Users,         color: 'bg-indigo-500', to: '/candidates' },
@@ -110,11 +137,8 @@ export default function Dashboard() {
     { label: 'Open Jobs',             value: metrics.openJobs,             icon: Briefcase,     color: 'bg-cyan-500',   to: '/jobs', sub: `of ${metrics.totalJobs} total` },
   ]
 
-  // Add color to pipeline data
-  const coloredPipeline = pipelineData.map((d) => ({
-    ...d,
-    fill: CHART_COLORS[d.stage],
-  }))
+  // Add color to each pipeline bar entry for the chart
+  const coloredPipeline = pipelineData.map((d) => ({ ...d, fill: CHART_COLORS[d.stage] }))
 
   return (
     <div className="space-y-6">
